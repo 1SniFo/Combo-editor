@@ -10,7 +10,7 @@ main:
     # if combo has deferment character can can only one word with specific position
     # line: "test1:123 test2:1264" is position: 2 it will read only test2:1264
     # 0 = last one
-    # 1 = First one
+    # 1 = first one
     # 2 = second one....
     position: 1
     # reads only with encode type
