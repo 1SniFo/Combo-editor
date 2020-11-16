@@ -1,0 +1,62 @@
+
+# GITHUB: 1SniFo | MIT License - Copyright (c) 2020 1SniFo
+# Feel free to donate BTC >> 1DAsb5VhKhYugKtEH5JSTimijYiCZaVEdH
+# Version 1.0
+main:
+  # input
+  Read:
+    # read combo line only is worlds has an specific character
+    character: ':'
+    # if combo has deferment character can can only one word with specific position
+    # line: "test1:123 test2:1264" is position: 2 it will read only test2:1264
+    # 0 = last one
+    # 1 = First one
+    # 2 = second one....
+    position: 1
+    # reads only with encode type
+    # default: ascii
+    encode: "ascii"
+
+  # output
+  # Remove duplicates from the same lines
+  Duplicates: true
+  # Reverse the combo
+  Reverse: true
+
+  # Max password length
+  # if you want to disable all length enable: false
+  # if you want to disable one put 0
+  Length:
+    enable: true
+    # Minimum of password characters
+    minimum: 4
+
+  # Edit password
+  Edit:
+    enable: true
+    # random edit password, chance between 0 and 100
+    # if you want to disable it put 0
+    chance: 50
+    # Upper the first character case
+    title: true
+    # edit section
+    # password: {pass}
+    password: "{pass}!"
+    # if password has specific keywords it will be nol edited
+    keywords:
+      - "!"
+  # if blacklist and whitelist enable on the same time it gonna force only whitelist
+  # saves only the whitelist keywords
+  Whitelist:
+    enable: false
+    keywords:
+      - "mail.ru"
+
+  # removes the keyword if found on the line
+  Blacklist:
+    enable: false
+    keywords:
+      - "@gmail.com"
+      - "@hotmail.com"
+      - "@outlook.com"
+
