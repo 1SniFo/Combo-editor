@@ -5,8 +5,8 @@ Features:
 - Remove duplicates
 - Reverse text
 - Minimum password length
-- custom edit (support random)
-- whitelist & blacklist keywords
+- Custom edit (support random)
+- Whitelist & Blacklist keywords
 
 # Support
 Bitcoin: 1DAsb5VhKhYugKtEH5JSTimijYiCZaVEdH
