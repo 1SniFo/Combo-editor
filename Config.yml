@@ -45,7 +45,7 @@ main:
     # if password has specific keywords it will be not edited
     keywords:
       - "!"
-  # if blacklist and whitelist enable on the same time it gonna force only whitelist
+  # if the two enabled blacklist & whitelist blacklist it will be disable
   # saves only the whitelist keywords
   Whitelist:
     enable: false
