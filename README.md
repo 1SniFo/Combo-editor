@@ -8,7 +8,7 @@ Features:
 - Custom edit (support random)
 - Whitelist & Blacklist keywords
 
-# Support
+# Donation
 Bitcoin: 1DAsb5VhKhYugKtEH5JSTimijYiCZaVEdH
 
 # Terms and conditions
