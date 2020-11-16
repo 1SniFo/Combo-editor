@@ -42,7 +42,7 @@ main:
     # edit section
     # password: {pass}
     password: "{pass}!"
-    # if password has specific keywords it will be nol edited
+    # if password has specific keywords it will be not edited
     keywords:
       - "!"
   # if blacklist and whitelist enable on the same time it gonna force only whitelist
