@@ -12,4 +12,4 @@ Features:
 Bitcoin: 1DAsb5VhKhYugKtEH5JSTimijYiCZaVEdH
 
 # Terms and conditions
-I'm not responsible for any illegal actions, Licensed:: [MIT License](LICENSE)
+I'm not responsible for any illegal actions, Licensed: [MIT License](LICENSE)
