@@ -2,23 +2,27 @@ import yaml
 from os import rename, path, makedirs
 from datetime import datetime
 import random
+from colorama import Fore
+from multiprocessing.dummy import Pool
 
 
 class main:
     def __init__(self):
         # Logo
-        print("""
+        print(Fore.YELLOW + """
         ╭━━━╮     ╭╮          ╭╮╭╮
         ┃╭━╮┃     ┃┃          ┃┣╯╰╮
         ┃┃ ╰╋━━┳╮╭┫╰━┳━━╮╭━━┳━╯┣╮╭╋━━┳━╮
         ┃┃ ╭┫╭╮┃╰╯┃╭╮┃╭╮┃┃┃━┫╭╮┣┫┃┃╭╮┃╭╯
         ┃╰━╯┃╰╯┃┃┃┃╰╯┃╰╯┃┃┃━┫╰╯┃┃╰┫╰╯┃┃
-        ╰━━━┻━━┻┻┻┻━━┻━━╯╰━━┻━━┻┻━┻━━┻╯
-                           By SniFo\n""")
+        ╰━━━┻━━┻┻┻┻━━┻━━╯╰━━┻━━┻┻━┻━━┻╯\n""")
         # ------------------------> Load config.yml <------------------------
         try:
             with open("Config.yml", encoding="utf-8") as file:
                 config = yaml.full_load(file)['main']
+                # ------------------------> main <------------------------
+                self.threads = int(config['threads'])
+                self.colors = bool(config['color'])
                 # ------------------------> Read <------------------------
                 self.read_character = str(config['Read']['character'])
                 self.read_position = int(config['Read']['position'])
@@ -43,14 +47,18 @@ class main:
                 self.blacklist_keywords = list(config['Blacklist']['keywords'])
                 file.close()
         except Exception as Error:
-            print(f"| Error | Loading config at", Error)
+            print(self.msg("Error", f"Loading config at {Error}", Fore.RED))
             exit()
-        # ------------------------> Checking values <------------------------
+        # ------------------------> values & Checking <------------------------
+        self.count = 0
         if self.read_position < 0:
-            print(f"| Config | Position has to be higher or equal to 0")
+            print(self.msg("Config", "Position has to be higher or equal to 0", Fore.YELLOW))
             exit()
         elif not 100 >= self.edit_chance >= 0:
-            print(f"| Config | Chance has to be higher or equal to 0")
+            print(self.msg("Config", "Chance has to be higher or equal to 0", Fore.YELLOW))
+            exit()
+        elif not self.threads >= 1:
+            print(self.msg("Config", "Threads has to be higher or equal to 1", Fore.YELLOW))
             exit()
         # ------------------------> Creating latest.txt <------------------------
         # Loading file
@@ -70,55 +78,77 @@ class main:
         with open("Combo.txt", 'r', encoding="utf-8", errors='ignore') as file:
             self.combo: list = [line.strip() for line in file.readlines()]
             file.close()
-        print(f"| Input |", len(self.combo), "line(s)")
-        # ------------------------> Start filtering <------------------------
-        temp_list: list = list()
+        print(self.msg("Input", f"{len(self.combo)} line(s)", Fore.RED))
+        # ------------------------> Duplicates <------------------------
         if self.duplicates:
             old = len(self.combo)
             self.combo = list(dict.fromkeys(self.combo))
-            print(f"| Duplicates |", old - len(self.combo), "lines has been removed")
+            print(self.msg("Duplicates", f"{old - len(self.combo)} line(s) has been removed", Fore.MAGENTA))
+        # ------------------------> Reverse <------------------------
         if self.reverse:
             self.combo.reverse()
-            print(f"| Reverse | Done")
-        for line in self.combo:
-            if account := self.read(line):
-                # ------------------------> Whitelist & Blacklist <------------------------
-                if self.whitelist_enable or self.blacklist_enable:
-                    if self.whitelist_enable:
-                        if [x for x in self.whitelist_keywords if x in account]:
-                            temp_list.append(account)
-                    elif self.blacklist_enable:
-                        if not [x for x in self.blacklist_keywords if x in account]:
-                            temp_list.append(account)
-                else:
-                    temp_list.append(account)
-        if self.whitelist_enable or self.blacklist_enable:
-            print(f"| Whitelist & Blacklist |", len(self.combo) - len(temp_list), "lines has been removed")
-        # ------------------------> Length <------------------------
-        final_list: list = list()
+            print(self.msg("Reverse", f"Successful", Fore.YELLOW))
+        # ------------------------> threading <-----------------------
+        if self.threads > len(self.combo):
+            self.threads = len(self.combo)
+        self.file = open("Output/latest.txt", "a")
+        with Pool(processes=self.threads) as self.pool:
+            self.pool.imap(func=self.start, iterable=self.combo)
+            self.pool.close()
+            self.pool.join()
+        self.file.close()
+        print(self.msg("Output", f"Finished with {self.count} line(s)", Fore.LIGHTGREEN_EX))
+
+    def start(self, line):
+        if account := self.read(line):
+            if self.check(account):
+                # email & username = splitter[0]
+                # password = splitter[-1]
+                user = account.split(self.read_character)[0]
+                password = account.split(self.read_character)[-1]
+                if self.length(password):
+                    if self.edit_enable:
+                        password = self.edit(password)
+                    self.count += 1
+                    self.file.write("%s\n" % (user + self.read_character + password))
+
+    def length(self, password):
         if self.length_enable:
-            for account in temp_list:
-                first = str(account).split(self.read_character)[0]
-                last = str(account).split(self.read_character)[-1]
-                if not (0 < self.length_minimum <= len(last)):
-                    temp_list.remove(account)
-                else:
-                    # ------------------------> Edit <------------------------
-                    if random.randint(0, 100) <= self.edit_chance:
-                        if self.edit_title:
-                            last = last.title()
-                        if not [x for x in self.edit_keywords if x in last]:
-                            last = self.edit_password.replace("{pass}", last)
-                        final_list.append(first + self.read_character + last)
-                    else:
-                        final_list.append(account)
-        if self.length_enable:
-            print(f"| Length |", len(temp_list) - len(final_list), "lines has been removed")
-        temp_list.clear()
-        print(f"| Output |", len(final_list), "line(s)")
-        with open("Output/latest.txt", "a") as file:
-            file.writelines("%s\n" % item for item in final_list)
-            file.close()
+            if len(password) >= self.length_minimum:
+                return True
+            else:
+                return False
+        else:
+            return True
+
+    def check(self, account: str):
+        if self.whitelist_enable:
+            if [x for x in self.whitelist_keywords if x in account]:
+                return True
+        elif self.blacklist_enable:
+            if not [x for x in self.blacklist_keywords if x in account]:
+                return True
+        else:
+            if self.whitelist_enable or self.blacklist_enable:
+                return False
+            else:
+                return True
+
+    def msg(self, title, msg, color):
+        if self.colors:
+            return f"{Fore.WHITE}| {color}{title} {Fore.WHITE}|{Fore.RESET} {msg}"
+        else:
+            return f"| {color} {title} | {msg}"
+
+    def edit(self, password):
+        if random.randint(0, 100) <= self.edit_chance:
+            if self.edit_title:
+                password = password.title()
+            if not [x for x in self.edit_keywords if x in password]:
+                password = self.edit_password.replace("{password}", password)
+            return password
+        else:
+            return password
 
     def read(self, line: str) -> str or bool:
         account = str()
@@ -132,7 +162,7 @@ class main:
                         i.encode(self.read_encode)
                     except Exception as error:
                         if not type(error) == UnicodeEncodeError:
-                            print(f"| Error |", str(error).title())
+                            print(self.msg("Error", f"{error}", Fore.RED))
                             exit()
                         n = 0
                     break

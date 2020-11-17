@@ -1,8 +1,11 @@
-
 # GITHUB: 1SniFo | MIT License - Copyright (c) 2020 1SniFo
 # Feel free to donate BTC >> 1DAsb5VhKhYugKtEH5JSTimijYiCZaVEdH
-# Version 1.0
+# Version 2.0
 main:
+  # we are using threads for large combos and prevent crash from bad pc
+  threads: 100
+  # Chat colors
+  color: true
   # input
   Read:
     # read combo line only is worlds has an specific character
@@ -21,7 +24,7 @@ main:
   # Remove duplicates from the same lines
   Duplicates: true
   # Reverse the combo
-  Reverse: true
+  Reverse: false
 
   # Max password length
   # if you want to disable all length enable: false
@@ -37,11 +40,12 @@ main:
     # random edit password, chance between 0 and 100
     # if you want to disable it put 0
     chance: 50
-    # Upper the first character case
+    # Upper the first character of password
     title: true
     # edit section
-    # password: {pass}
-    password: "{pass}!"
+    # default: "{password}"
+    # example: if password: "!{password}!" and password was 123 it will save it as !123!
+    password: "{password}!"
     # if password has specific keywords it will be not edited
     keywords:
       - "!"
@@ -50,13 +54,13 @@ main:
   Whitelist:
     enable: false
     keywords:
-      - "mail.ru"
+      - "@mail.ru"
+      - "@example.com"
 
   # removes the keyword if found on the line
   Blacklist:
     enable: false
     keywords:
-      - "@gmail.com"
       - "@hotmail.com"
-      - "@outlook.com"
-
+      - "@gmail.com"
+      - "@example.com"
