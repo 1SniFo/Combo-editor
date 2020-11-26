@@ -9,8 +9,7 @@ from multiprocessing.dummy import Pool
 class main:
     def __init__(self):
         # Logo
-        self.first_temp: list = []
-        self.second_temp: list = []
+        self.temp_hot: list = []
         print(Fore.YELLOW + """
         ╭━━━╮     ╭╮          ╭╮╭╮
         ┃╭━╮┃     ┃┃          ┃┣╯╰╮
@@ -101,11 +100,15 @@ class main:
             self.pool.join()
         self.file.close()
         if self.isHot:
-            print(self.msg("Hot", f"{len(self.first_temp)} line(s)", Fore.YELLOW))
+            print(self.msg("Hot", f"{len(self.temp_hot)} line(s)", Fore.YELLOW))
+            with open("Output/latest.txt", "r") as r:
+                self.temp_list: list = [line.strip() for line in r.readlines()]
+                r.close()
             with open("Output/latest.txt", "w") as write:
-                write.writelines(["%s\n" % item for item in (self.first_temp + self.second_temp)])
+                write.writelines(["%s\n" % item for item in self.temp_hot])
+                write.writelines(["%s\n" % item for item in self.temp_list])
                 write.close()
-        print(self.msg("Output", f"Finished with {self.count} line(s)", Fore.LIGHTGREEN_EX))
+        print(self.msg("Output", f"Finished with {self.count + len(self.temp_hot)} line(s)", Fore.LIGHTGREEN_EX))
 
     def start(self, line):
         if account := self.read(line):
@@ -115,21 +118,20 @@ class main:
                 user = account.split(self.read_character)[0]
                 password = account.split(self.read_character)[-1]
                 if self.length(password):
+                    # Edit
                     if self.edit_enable:
                         password = self.edit(password)
+                    # Hot section
                     if self.hot(user, password):
-                        self.first_temp.append(user + self.read_character + password)
+                        self.temp_hot.append(account)
                     else:
-                        if self.isHot:
-                            self.second_temp.append(user + self.read_character + password)
-                        else:
-                            self.file.write("%s\n" % (user + self.read_character + password))
-                    self.count += 1
+                        self.file.write("%s\n" % (user + self.read_character + password))
+                        self.count += 1
 
     def hot(self, user: str, password: str):
         if self.isHot:
             if user[0].lower() == password[0].lower():
-                return user + self.read_character + password
+                return True
             else:
                 return False
         else:
