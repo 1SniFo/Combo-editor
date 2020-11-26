@@ -9,7 +9,6 @@ from multiprocessing.dummy import Pool
 class main:
     def __init__(self):
         # Logo
-        self.temp_hot: list = []
         print(Fore.YELLOW + """
         ╭━━━╮     ╭╮          ╭╮╭╮
         ┃╭━╮┃     ┃┃          ┃┣╯╰╮
@@ -31,7 +30,9 @@ class main:
                 # ------------------------> Text <------------------------
                 self.duplicates = bool(config['Duplicates'])
                 self.reverse = bool(config['Reverse'])
-                self.isHot = bool(config['Hot'])
+                # ------------------------> Hq <------------------------
+                self.hq_enable = bool(config['Hq']['enable'])
+                self.hq_length = int(config['Hq']['length'])
                 # ------------------------> Length <------------------------
                 self.length_enable = bool(config['Length']['enable'])
                 self.length_minimum = int(config['Length']['minimum'])
@@ -61,6 +62,9 @@ class main:
             exit()
         elif not self.threads >= 1:
             print(self.msg("Config", "Threads has to be higher or equal to 1", Fore.YELLOW))
+            exit()
+        elif not self.hq_length >= 1:
+            print(self.msg("Config", "Hq length has to be higher or equal to 1", Fore.YELLOW))
             exit()
         # ------------------------> Creating latest.txt <------------------------
         # Loading file
@@ -99,45 +103,36 @@ class main:
             self.pool.close()
             self.pool.join()
         self.file.close()
-        if self.isHot:
-            print(self.msg("Hot", f"{len(self.temp_hot)} line(s)", Fore.YELLOW))
-            with open("Output/latest.txt", "r") as r:
-                self.temp_list: list = [line.strip() for line in r.readlines()]
-                r.close()
-            with open("Output/latest.txt", "w") as write:
-                write.writelines(["%s\n" % item for item in self.temp_hot])
-                write.writelines(["%s\n" % item for item in self.temp_list])
-                write.close()
-        print(self.msg("Output", f"Finished with {self.count + len(self.temp_hot)} line(s)", Fore.LIGHTGREEN_EX))
+        # final
+        print(self.msg("Output", f"Finished with {self.count} line(s)", Fore.LIGHTGREEN_EX))
 
     def start(self, line):
         if account := self.read(line):
-            if self.check(account):
-                # email & username = splitter[0]
-                # password = splitter[-1]
-                user = account.split(self.read_character)[0]
-                password = account.split(self.read_character)[-1]
-                if self.length(password):
-                    # Edit
-                    if self.edit_enable:
-                        password = self.edit(password)
-                    # Hot section
-                    if self.hot(user, password):
-                        self.temp_hot.append(account)
-                    else:
-                        self.file.write("%s\n" % (user + self.read_character + password))
-                        self.count += 1
+            if self.blacklist(account):
+                if self.whitelist(account):
+                    # email & username = splitter[0]
+                    # password = splitter[-1]
+                    user = account.split(self.read_character)[0]
+                    password = account.split(self.read_character)[-1]
+                    if self.length(password):
+                        # checking hq
+                        if self.check_hq(user, password):
+                            # edit it if you can
+                            if self.edit_enable:
+                                password = self.edit(password)
+                            self.file.write("%s\n" % (user + self.read_character + password))
+                            self.count += 1
 
-    def hot(self, user: str, password: str):
-        if self.isHot:
-            if user[0].lower() == password[0].lower():
+    def check_hq(self, user: str, password: str):
+        if self.hq_enable:
+            if user[0:self.hq_length].lower() == password[0:self.hq_length].lower():
                 return True
             else:
                 return False
         else:
-            return False
+            return True
 
-    def length(self, password):
+    def length(self, password: str):
         if self.length_enable:
             if len(password) >= self.length_minimum:
                 return True
@@ -146,18 +141,23 @@ class main:
         else:
             return True
 
-    def check(self, account: str):
+    def blacklist(self, account: str):
+        if self.blacklist_enable:
+            if not [x for x in self.blacklist_keywords if x in account]:
+                return True
+            else:
+                return False
+        else:
+            return True
+
+    def whitelist(self, account: str):
         if self.whitelist_enable:
             if [x for x in self.whitelist_keywords if x in account]:
                 return True
-        elif self.blacklist_enable:
-            if not [x for x in self.blacklist_keywords if x in account]:
-                return True
-        else:
-            if self.whitelist_enable or self.blacklist_enable:
-                return False
             else:
-                return True
+                return False
+        else:
+            return True
 
     def msg(self, title, msg, color):
         if self.colors:

@@ -1,6 +1,6 @@
 # GITHUB: 1SniFo | MIT License - Copyright (c) 2020 1SniFo
 # Feel free to donate BTC >> 1DAsb5VhKhYugKtEH5JSTimijYiCZaVEdH
-# Version 2.1
+# Version 2.3
 main:
   # we are using threads for large combos and prevent crash from bad pc
   threads: 100
@@ -27,8 +27,16 @@ main:
   # Reverse the combo
   Reverse: false
 
-  # Write the account(s) if first user characters equal to first password characters and others on the end
-  Hot: true
+  # it will only saves the hq account.
+  # an hq account is like if first user or email characters equal to first password characters
+  # example: alex230@gmail.com:alex944
+  Hq:
+    enable: false
+    # if length: 1 it means first 1 characters equal to other
+    # example: alex230@gmail.com:alex944  ---> a = a > HQ
+    # if length: 2
+    # example: alex230@gmail.com:alex944  ---> al = al > HQ
+    length: 2
 
   # Max password length
   # if you want to disable all length enable: false
@@ -36,7 +44,7 @@ main:
   Length:
     enable: true
     # Minimum of password characters
-    minimum: 6
+    minimum: 4
 
   # Edit password
   Edit:
@@ -56,14 +64,14 @@ main:
   # if the two enabled blacklist & whitelist blacklist it will be disable
   # saves only the whitelist keywords
   Whitelist:
-    enable: false
+    enable: true
     keywords:
       - "@mail.ru"
       - "@example.com"
 
   # removes the keyword if found on the line
   Blacklist:
-    enable: false
+    enable: true
     keywords:
       - "@hotmail.com"
       - "@gmail.com"
