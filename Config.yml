@@ -1,6 +1,6 @@
 # GITHUB: 1SniFo | MIT License - Copyright (c) 2020 1SniFo
 # Feel free to donate BTC >> 1DAsb5VhKhYugKtEH5JSTimijYiCZaVEdH
-# Version 2.0
+# Version 2.1
 main:
   # we are using threads for large combos and prevent crash from bad pc
   threads: 100
@@ -23,8 +23,12 @@ main:
   # output
   # Remove duplicates from the same lines
   Duplicates: true
+
   # Reverse the combo
   Reverse: false
+
+  # Write the account(s) if first user characters equal to first password characters and others on the end
+  Hot: true
 
   # Max password length
   # if you want to disable all length enable: false
@@ -32,11 +36,11 @@ main:
   Length:
     enable: true
     # Minimum of password characters
-    minimum: 4
+    minimum: 6
 
   # Edit password
   Edit:
-    enable: true
+    enable: false
     # random edit password, chance between 0 and 100
     # if you want to disable it put 0
     chance: 50

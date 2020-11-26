@@ -9,6 +9,8 @@ from multiprocessing.dummy import Pool
 class main:
     def __init__(self):
         # Logo
+        self.first_temp: list = []
+        self.second_temp: list = []
         print(Fore.YELLOW + """
         ╭━━━╮     ╭╮          ╭╮╭╮
         ┃╭━╮┃     ┃┃          ┃┣╯╰╮
@@ -30,6 +32,7 @@ class main:
                 # ------------------------> Text <------------------------
                 self.duplicates = bool(config['Duplicates'])
                 self.reverse = bool(config['Reverse'])
+                self.isHot = bool(config['Hot'])
                 # ------------------------> Length <------------------------
                 self.length_enable = bool(config['Length']['enable'])
                 self.length_minimum = int(config['Length']['minimum'])
@@ -87,7 +90,7 @@ class main:
         # ------------------------> Reverse <------------------------
         if self.reverse:
             self.combo.reverse()
-            print(self.msg("Reverse", f"Successful", Fore.YELLOW))
+            print(self.msg("Reverse", f"Successful", Fore.LIGHTBLUE_EX))
         # ------------------------> threading <-----------------------
         if self.threads > len(self.combo):
             self.threads = len(self.combo)
@@ -97,6 +100,11 @@ class main:
             self.pool.close()
             self.pool.join()
         self.file.close()
+        if self.isHot:
+            print(self.msg("Hot", f"{len(self.first_temp)} line(s)", Fore.YELLOW))
+            with open("Output/latest.txt", "w") as write:
+                write.writelines(["%s\n" % item for item in (self.first_temp + self.second_temp)])
+                write.close()
         print(self.msg("Output", f"Finished with {self.count} line(s)", Fore.LIGHTGREEN_EX))
 
     def start(self, line):
@@ -109,8 +117,23 @@ class main:
                 if self.length(password):
                     if self.edit_enable:
                         password = self.edit(password)
+                    if self.hot(user, password):
+                        self.first_temp.append(user + self.read_character + password)
+                    else:
+                        if self.isHot:
+                            self.second_temp.append(user + self.read_character + password)
+                        else:
+                            self.file.write("%s\n" % (user + self.read_character + password))
                     self.count += 1
-                    self.file.write("%s\n" % (user + self.read_character + password))
+
+    def hot(self, user: str, password: str):
+        if self.isHot:
+            if user[0].lower() == password[0].lower():
+                return user + self.read_character + password
+            else:
+                return False
+        else:
+            return False
 
     def length(self, password):
         if self.length_enable:
@@ -172,4 +195,5 @@ class main:
             return account
 
 
-main()
+if __name__ == "__main__":
+    main()
